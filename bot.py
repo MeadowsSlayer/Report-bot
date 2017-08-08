@@ -192,19 +192,20 @@ def other(message):
 # Реакция на "Дома"
 @bot.message_handler(regexp="Я дома")
 def other(message):
-    cursor.execute("SELECT UserName FROM User ORDER BY UserID LIMIT ?", (str(message.chat.id)))
-    UserName1 = cursor.fetchall()
-    cursor.execute("SELECT Rights FROM User ORDER BY UserID LIMIT ?", (str(message.chat.id)))
-    UserID1 = cursor.fetchall()
-    bot.send_message(message.chat.id, "Ок")
-    global action
-    action = message.text
-    global place
-    place = "0"
-    cursor.execute("INSERT INTO Table_2 VALUES(?,?,?,?,?,?)",
-                   (UserName1, message.from_user.id, UserID1, time.asctime(), action, place, null, null))
-    conn.commit()
-    conn.close()
+    if message.from_user.id == cursor.execute("SELECT UserID FROM User"):
+        global UserID_1
+        global UserName_2
+        global place
+        global action
+        cursor.execute("SELECT UserName FROM User WHERE UserID = %i" % (int(message.from_user.id)))
+        UserName_2 = cursor.fetchall()
+        cursor.execute("SELECT Rights FROM User WHERE UserID = %i" % (int(message.from_user.id)))
+        UserID_1 = cursor.fetchall()
+        action = message.text
+        place = "0"
+        cursor.execute("INSERT INTO Table_2 VALUES(%r,%i,%r,%r,%r,%r,%r,%r)" % (str(UserName_2), message.from_user.id, str(UserID_1), time.asctime(), action, place, action2, null))
+        conn.commit()
+        bot.send_message(message.chat.id, "Ок")
 
 #Реакция на любой текст
 @bot.message_handler(content_types=["text"])
@@ -235,10 +236,8 @@ def mesage_reaction(message):
     if road == "1":
         road = message.text
         bot.send_message(message.chat.id, "Я запомню это")
-        cursor.execute("INSERT INTO Table_2 VALUES(?,?,?,?,?,?)",
-                       (time.asctime(), action, place, null, road, message.from_user.id))
+        cursor.execute("INSERT INTO Table_2 VALUES(%r,%i,%r,%r,%r,%r,%r,%r)" % (str(UserName_2), message.from_user.id, str(UserID_1), time.asctime(), action, place, action2, null))
         conn.commit()
-        conn.close()
     if r == "0":
         pass
     elif r == "1":
@@ -249,24 +248,20 @@ def mesage_reaction(message):
     if v == "1":
         action2 = message.text
         bot.send_message(message.chat.id, "Я запомню это")
-        cursor.execute("INSERT INTO Table_2 %i",
-                       (time.asctime(), action, null, action2, null, message.from_user.id))
+        cursor.execute("INSERT INTO Table_2 VALUES(%r,%i,%r,%r,%r,%r,%r,%r)" % (str(UserName_2), message.from_user.id, str(UserID_1), time.asctime(), action, place, action2, null))
         conn.commit()
-        conn.close()
     if z == "1":
         place = message.text
         z = "0"
         bot.send_message(message.chat.id, "Я запомню это")
-        cursor.execute("INSERT INTO Table_2 %i",
-                       (UserName_2, str(message.from_user.id), UserID1, time.asctime(), action, place, null, null))
+        cursor.execute("INSERT INTO Table_2 VALUES(%r,%i,%r,%r,%r,%r,%r,%r)" % (str(UserName_2), message.from_user.id, str(UserID_1), time.asctime(), action, place, action2, null))
         conn.commit()
-        conn.close()
     if a == "0":
         if action2 == "1":
             action2 = message.text
-            bot.send_message(message.chat.id, "Я запомню это")
             cursor.execute("INSERT INTO Table_2 VALUES(%r,%i,%r,%r,%r,%r,%r,%r)" % (str(UserName_2), message.from_user.id, str(UserID_1), time.asctime(), action, place, action2, null))
             conn.commit()
+            bot.send_message(message.chat.id, "Я запомню это")
     if a == "1":
         if b == "0":
             b = message.text

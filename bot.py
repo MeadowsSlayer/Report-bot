@@ -1,3 +1,5 @@
+#! /usr/bin/env python
+# -*- coding: utf-8 -*-
 import config
 import telebot
 from telebot import types
@@ -257,7 +259,9 @@ def mesage_reaction(message):
         place = message.text
         z = "0"
         bot.send_message(message.chat.id, "Я запомню это")
-        cursor.execute("INSERT INTO Table_2 %i",
+        cursor.execute("INSERT INTO Table_2 VALUES(?,?,?,?,?,?,?,?)",
+                           (UserName_2, message.chat.id, UserID1, time.asctime(), action, place, action2, null))
+        cursor.execute("INSERT INTO Table_2",
                        (UserName_2, str(message.from_user.id), UserID1, time.asctime(), action, place, null, null))
         conn.commit()
         conn.close()

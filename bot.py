@@ -47,6 +47,10 @@ global road
 road="0"
 global u
 u="0"
+global UserName_2
+UserName_2="0"
+global UserID_1
+UserID_1="0"
 
 bot=telebot.TeleBot(config.token)
 
@@ -87,13 +91,13 @@ def id(message):
         a="2"
         bot.send_message(message.chat.id, "New user name:")
 
-# Развитие событий "на объекте"
+# Развитие событий "Я на объекте"
 @bot.message_handler(regexp="Я на объекте")
 def handle_message(message):
     global UserID1
     cursor.execute("SELECT UserID FROM User")
     UserID1 = cursor.fetchall()
-    if message.chat.id == UserID1:
+    if message.chat.id == 372111586:
         workup = types.ReplyKeyboardMarkup()
         button_New = types.KeyboardButton(text="Объект новый")
         buttion_old = types.KeyboardButton(text="Объект старый")
@@ -215,17 +219,19 @@ def mesage_reaction(message):
     global c1
     global d1
     global action2
+    global action
     global road
     global z
     global UserName
     global UserID
     global Rights
     global UserName_2
-    global UserID1
-    cursor.execute("SELECT UserName FROM User ORDER BY UserID LIMIT %i" % message.chat.id)
+    global UserID_1
+    global null
+    cursor.execute("SELECT UserName FROM User WHERE UserID = %i" % (int(message.from_user.id)))
     UserName_2 = cursor.fetchall()
-    cursor.execute("SELECT Rights FROM User ORDER BY UserID LIMIT %i" % message.chat.id)
-    UserID1 = cursor.fetchall()
+    cursor.execute("SELECT Rights FROM User WHERE UserID = %i" % (int(message.from_user.id)))
+    UserID_1 = cursor.fetchall()
     if road == "1":
         road = message.text
         bot.send_message(message.chat.id, "Я запомню это")
@@ -243,7 +249,7 @@ def mesage_reaction(message):
     if v == "1":
         action2 = message.text
         bot.send_message(message.chat.id, "Я запомню это")
-        cursor.execute("INSERT INTO Table_2 VALUES(?,?,?,?,?,?)",
+        cursor.execute("INSERT INTO Table_2 %i",
                        (time.asctime(), action, null, action2, null, message.from_user.id))
         conn.commit()
         conn.close()
@@ -251,16 +257,15 @@ def mesage_reaction(message):
         place = message.text
         z = "0"
         bot.send_message(message.chat.id, "Я запомню это")
-        cursor.execute("INSERT INTO Table_2 VALUES(?,?,?,?,?,?,?,?)",
-                       (UserName_2, message.from_user.id, UserID1, time.asctime(), action, place, null, null))
+        cursor.execute("INSERT INTO Table_2 %i",
+                       (UserName_2, str(message.from_user.id), UserID1, time.asctime(), action, place, null, null))
         conn.commit()
         conn.close()
     if a == "0":
         if action2 == "1":
             action2 = message.text
             bot.send_message(message.chat.id, "Я запомню это")
-            cursor.execute("INSERT INTO Table_2 VALUES(?,?,?,?,?,?,?,?)",
-                           (UserName_2, message.chat.id, UserID1, time.asctime(), action, place, action2, null))
+            cursor.execute("INSERT INTO Table_2 VALUES(%r,%i,%r,%r,%r,%r,%r,%r)" % (str(UserName_2), message.from_user.id, str(UserID_1), time.asctime(), action, place, action2, null))
             conn.commit()
     if a == "1":
         if b == "0":

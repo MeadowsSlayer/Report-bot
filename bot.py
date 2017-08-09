@@ -58,8 +58,8 @@ UserID = 0
 global Rights
 Rights = 0
 
-user = {'Джамал': 372111586}
-admins = {'Джамал': 372111586}
+user = [372111586]
+admins = [372111586]
 
 bot = telebot.TeleBot(config.token)
 
@@ -112,17 +112,17 @@ def welcome_message(message):
                      "Надеюсь наша работа с вами будет успешной.")
     for beta in admins:
         bot.send_message(message.chat.id,
-                         "Вы являетесь админом и можете заносить новых пользователей с помощью команды '/newperson'.")
+                         "Вы являетесь админом и можете заносить новых пользователей с помощью команды /newperson.")
 
 # ID new
 
 
 @bot.message_handler(commands=["newperson"])
-def new():
+def new(message):
     global a
     for beta in admins:
         a = "2"
-        bot.send_message(beta, "New user name:")
+        bot.send_message(message.chat.id, "New user name:")
 
 
 @bot.message_handler(regexp=["1"])
@@ -131,7 +131,7 @@ def hamon_user(message):
     global UserName
     for beta in admins:
         UserName = message.text
-        bot.send_message(beta, "Rights(Админ-1, Обычный пользователь-2):")
+        bot.send_message(message.chat.id, "Rights(Админ-1, Обычный пользователь-2):")
         a = "4"
 
 
@@ -141,7 +141,7 @@ def muda_muda(message):
     global UserName
     for beta in admins:
         UserName = message.text
-        bot.send_message(beta, "Rights(Админ-1, Обычный пользователь-2):")
+        bot.send_message(message.chat.id, "Rights(Админ-1, Обычный пользователь-2):")
         a = "4"
 
 # Развитие событий "Я на объекте"
@@ -408,13 +408,13 @@ def messsage_reaction(message):
         bot.send_message(message.chat.id, "Rights:")
         a = "0"
     if a == "4":
-        UserID = int(message.text)
+        UserID = message.text
         cursor.execute("INSERT INTO User VALUES(%r,%r,%s,%s)" % (str(UserName), str(UserID), Rights, null))
         conn.commit()
-        a = "0"
-        user[UserName] = message.text
+        user.append(message.text)
         if Rights == "1":
-            admins[UserName] = message.text
+            admins.append(message.text)
+        a = "0"
 
 if __name__ == '__main__':
     t = threading.Thread(target=message_send)

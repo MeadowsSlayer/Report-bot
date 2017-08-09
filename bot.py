@@ -1,3 +1,5 @@
+#! /usr/bin/env python
+# -*- coding: utf-8 -*-
 import config
 import telebot
 from telebot import types
@@ -56,10 +58,11 @@ UserID = 0
 global Rights
 Rights = 0
 
-user = [372111586]
-admins = [372111586]
+user = {'Джамал': 372111586}
+admins = {'Джамал': 372111586}
 
 bot = telebot.TeleBot(config.token)
+
 
 def message_send():
     global u
@@ -99,6 +102,8 @@ def message_send():
                     u = "1"
 
 # Реакция на комманду /start
+
+
 @bot.message_handler(commands=["start"])
 def welcome_message(message):
     bot.send_message(message.chat.id,
@@ -110,12 +115,15 @@ def welcome_message(message):
                          "Вы являетесь админом и можете заносить новых пользователей с помощью команды '/newperson'.")
 
 # ID new
+
+
 @bot.message_handler(commands=["newperson"])
 def new():
     global a
     for beta in admins:
         a = "2"
         bot.send_message(beta, "New user name:")
+
 
 @bot.message_handler(regexp=["1"])
 def hamon_user(message):
@@ -125,6 +133,7 @@ def hamon_user(message):
         UserName = message.text
         bot.send_message(beta, "Rights(Админ-1, Обычный пользователь-2):")
         a = "4"
+
 
 @bot.message_handler(regexp=["2"])
 def muda_muda(message):
@@ -136,6 +145,8 @@ def muda_muda(message):
         a = "4"
 
 # Развитие событий "Я на объекте"
+
+
 @bot.message_handler(regexp="Я на объекте")
 def handle_message(message):
     global UserID1
@@ -259,10 +270,12 @@ def other(message):
     bot.send_message(message.chat.id, "Ок")
 
 # Удаление проектов
+
+
 @bot.message_handler(regexp="Я хочу удалить проект")
 def delete(message):
     global jo
-    jo=1
+    jo = 1
     maxup = types.ReplyKeyboardMarkup(row_width=1)
     if e != "0":
         buttion_one = types.KeyboardButton(e)
@@ -276,10 +289,12 @@ def delete(message):
     bot.send_message(message.chat.id, "Выберите проект на удаление", reply_markup=maxup)
 
 # Удаление объектов
+
+
 @bot.message_handler(regexp="Я хочу удалить объект")
 def delete(message):
     global jo
-    jo=1
+    jo = 1
     maxup = types.ReplyKeyboardMarkup(row_width=1)
     if a != "0":
         buttion_one = types.KeyboardButton(a)
@@ -293,6 +308,8 @@ def delete(message):
     bot.send_message(message.chat.id, "Выберите объект на удаление", reply_markup=maxup)
 
 # Реакция на любой текст
+
+
 @bot.message_handler(content_types=["text"])
 def messsage_reaction(message):
     global r
@@ -392,12 +409,12 @@ def messsage_reaction(message):
         a = "0"
     if a == "4":
         UserID = int(message.text)
-        cursor.execute("INSERT INTO User VALUES(?,?,?,?)", (UserName, UserID, Rights, null))
+        cursor.execute("INSERT INTO User VALUES(%r,%r,%s,%s)" % (str(UserName), str(UserID), Rights, null))
         conn.commit()
-        a="0"
-        user.append(message.text)
+        a = "0"
+        user[UserName] = message.text
         if Rights == "1":
-            admins.append(message.text)
+            admins[UserName] = message.text
 
 if __name__ == '__main__':
     t = threading.Thread(target=message_send)

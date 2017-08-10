@@ -43,6 +43,8 @@ global road
 road = "0"
 global u
 u = "0"
+global jo
+jo = 0
 global UserName_2
 UserName_2 = "0"
 global UserID_1
@@ -63,6 +65,19 @@ admins = [372111586]
 
 bot = telebot.TeleBot(config.token)
 
+def function(uid):
+    for beta in admins:
+        if uid==beta:
+            return True
+    else:
+        return False
+
+def function_1(userid):
+    for beta in user:
+        if userid==beta:
+            return True
+    else:
+        return False
 
 def message_send():
     global u
@@ -110,38 +125,33 @@ def welcome_message(message):
                      "Здравствуйте! Я бот для отчетов, каждый день нещадно с 9 утра спамить вас запросами "
                      "об отчетах покуда вы не ответите. Вы сами на это подписались! "
                      "Надеюсь наша работа с вами будет успешной.")
-    for beta in admins:
+    if function(message.from_user.id):
         bot.send_message(message.chat.id,
                          "Вы являетесь админом и можете заносить новых пользователей с помощью команды /newperson.")
-
-# ID new
-
 
 @bot.message_handler(commands=["newperson"])
 def new(message):
     global a
-    for beta in admins:
+    if function(message.from_user.id):
         a = "2"
         bot.send_message(message.chat.id, "New user name:")
 
-
-@bot.message_handler(regexp=["1"])
-def hamon_user(message):
+@bot.message_handler(regexp="1")
+def right_1(message):
     global a
-    global UserName
-    for beta in admins:
-        UserName = message.text
-        bot.send_message(message.chat.id, "Rights(Админ-1, Обычный пользователь-2):")
+    global Rights
+    if function(message.from_user.id):
+        Rights = message.text
+        bot.send_message(message.chat.id, "ID:")
         a = "4"
 
-
-@bot.message_handler(regexp=["2"])
-def muda_muda(message):
+@bot.message_handler(regexp="2")
+def right_2(message):
     global a
-    global UserName
+    global Rights
     for beta in admins:
-        UserName = message.text
-        bot.send_message(message.chat.id, "Rights(Админ-1, Обычный пользователь-2):")
+        Rights = message.text
+        bot.send_message(message.chat.id, "ID:")
         a = "4"
 
 # Развитие событий "Я на объекте"
@@ -165,7 +175,7 @@ def handle_message(message):
 
 @bot.message_handler(regexp="Объект новый")
 def handle_message_id(message):
-    bot.send_message(message.chat.id, "Напишите название объекта. Помните вы не можете иметь более 3-х объектов")
+    bot.send_message(message.chat.id, "Напишите название объекта. Помните вы не можете иметь более 3-х объектов. Если вы хотите удалить объект напишите 'Я хочу удалить объект'")
     global a
     a = "1"
 
@@ -203,7 +213,7 @@ def mess(message):
 
 @bot.message_handler(regexp="Я занимаюсь чем-то новым")
 def new(message):
-    bot.send_message(message.chat.id, "Напишите название объекта. Помните вы не можете иметь более 3-х проектов")
+    bot.send_message(message.chat.id, "Напишите название объекта. Помните вы не можете иметь более 3-х проектов. Если вы хотите удалить объект напишите 'Я хочу удалить проект'")
     global z
     z = "1"
 
@@ -336,6 +346,15 @@ def messsage_reaction(message):
     UserName_2 = cursor.fetchall()
     cursor.execute("SELECT Rights FROM User WHERE UserID = %i" % (int(message.chat.id)))
     UserID_1 = cursor.fetchall()
+    if a == "2":
+        bot.send_message(message.chat.id, "Rights(Админ-1, Обычный пользователь-2):")
+        a = "0"
+    if a == "4":
+        bot.send_message(message.chat.id, "Hello world!")
+        user.append(message.text)
+        if Rights == "1":
+            admins.append(message.text)
+        a = "0"
     if road == "1":
         road = message.text
         bot.send_message(message.chat.id, "Я запомню это")
@@ -403,18 +422,6 @@ def messsage_reaction(message):
         bot.send_message(message.chat.id, "Что вы там делаете?")
         a = "0"
         action2 = "1"
-    if a == "2":
-        Rights = message.text
-        bot.send_message(message.chat.id, "Rights:")
-        a = "0"
-    if a == "4":
-        UserID = message.text
-        cursor.execute("INSERT INTO User VALUES(%r,%r,%s,%s)" % (str(UserName), str(UserID), Rights, null))
-        conn.commit()
-        user.append(message.text)
-        if Rights == "1":
-            admins.append(message.text)
-        a = "0"
 
 if __name__ == '__main__':
     t = threading.Thread(target=message_send)

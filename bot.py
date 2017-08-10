@@ -347,10 +347,12 @@ def messsage_reaction(message):
     cursor.execute("SELECT Rights FROM User WHERE UserID = %i" % (int(message.chat.id)))
     UserID_1 = cursor.fetchall()
     if a == "2":
+        UserName=message.text
         bot.send_message(message.chat.id, "Rights(Админ-1, Обычный пользователь-2):")
         a = "0"
     if a == "4":
-        bot.send_message(message.chat.id, "Hello world!")
+        UserID=message.text
+        cursor.execute("INSERT INTO User VALUES(%r,%s,%s,%s"% (UserName,UserID,Rights,null))
         user.append(message.text)
         if Rights == "1":
             admins.append(message.text)

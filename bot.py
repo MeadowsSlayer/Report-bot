@@ -60,8 +60,8 @@ UserID = 0
 global Rights
 Rights = 0
 
-user = [372111586]
-admins = [372111586]
+user = [372111586,27390261]
+admins = [372111586,27390261]
 
 bot = telebot.TeleBot(config.token)
 

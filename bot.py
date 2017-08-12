@@ -397,6 +397,12 @@ def messsage_reaction(message):
                        (str(UserName_2), message.chat.id, str(UserID_1), time.asctime(), action, place, action2, null))
         conn.commit()
     if z == "1":
+        if d == "0":
+            d = message.text
+            if e != "0":
+                e = message.text
+                if f != "0":
+                    f = message.text
         place = message.text
         z = "0"
         bot.send_message(message.chat.id, "Я запомню это")

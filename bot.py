@@ -9,7 +9,7 @@ import time
 import threading
 
 
-conn = sqlite3.connect('DB FOR BOT3.db', check_same_thread=False)
+conn = sqlite3.connect('DB FOR BOT.db', check_same_thread=False)
 cursor = conn.cursor()
 
 
@@ -55,18 +55,6 @@ def message_send(u):
                     bot.send_message(beta, result)
         if statTime == "9:01" or statTime == "13:01" or statTime == "18:01":
             u = "0"
-        if (statTime == "9:30" or statTime == "13:30" or statTime == "18:30") and first == "0":
-            for beta in user:
-                if u == "0":
-                    make = types.ReplyKeyboardMarkup()
-                    buttion_1 = types.KeyboardButton(text="Я на объекте")
-                    buttion_2 = types.KeyboardButton(text="Я на работе")
-                    buttion_3 = types.KeyboardButton(text="Я дома")
-                    buttion_4 = types.KeyboardButton(text="Я в лаборотории")
-                    buttion_5 = types.KeyboardButton(text="Другое")
-                    make.add(buttion_1, buttion_2, buttion_3, buttion_4, buttion_5)
-                    bot.send_message(beta, "Где вы или чем заняты?", reply_markup=make)
-                    u = "1"
 
 
 
@@ -132,48 +120,51 @@ def handle_message(message):
     workup.add(button_New, buttion_old)
     bot.send_message(message.chat.id, "На каком объекте?", reply_markup=workup)
     cursor.execute("INSERT INTO Table_2(UserID,Action,Message) VALUES(%s,'Я на объекте','Last')" % (str(message.chat.id)))
+    conn.commit()
 
 @bot.message_handler(regexp="Объект новый")
 def handle_message_id(message):
-    msg = bot.send_message(message.chat.id, "Напишите название объекта. Помните вы не можете иметь более 3-х объектов. Если вы хотите удалить объект напишите 'Я хочу удалить объект'")
-    bot.register_next_step_handler(msg, object_obj)
+    msg = bot.send_message(message.chat.id, "Напишите название объекта. Если вы хотите удалить объект напишите 'Я хочу удалить объект'")
+    bot.register_next_step_handler(msg, object_obj_2)
 
 @bot.message_handler(regexp="Объект старый")
 def handle_message_id_2(message):
+    cursor=conn.cursor()
+    cursor.execute("SELECT Buttion FROM UserButtion WHERE UserID=%i AND OP='O'" % (int(message.chat.id)))
+    Buttion = cursor.fetchall()
     maxup = types.ReplyKeyboardMarkup(row_width=1)
-    object_obj(b, c, d)
-    if b != "0":
-        buttion_one = types.KeyboardButton(b)
-        maxup.add(buttion_one)
-    if c != "0":
-        buttion_two = types.KeyboardButton(c)
-        maxup.add(buttion_two)
-    if d != "0":
-        buttion_three = types.KeyboardButton(d)
-        maxup.add(buttion_three)
+    maxup.add(str(Buttion))
     msg = bot.send_message(message.chat.id, "Напишите название объекта на котором вы сейчас", reply_markup=maxup)
+    cursor.close()
     bot.register_next_step_handler(msg, object_obj)
 
-def object_obj(message, b="0", c="0", d="0"):
-    if b == "0":
-        b = message.text
-    if b != "0":
-        c = message.text
-        if c != "0":
-            d = message.text
-    msg = bot.send_message(message.chat.id, "Что вы там делаете?")
-    cursor.execute("UPDATE Table_2 SET PlaceProject = %r WHERE UserID=%s AND Message='Last'" % (message.text, str(message.chat.id)))
-    bot.register_next_step_handler(msg, object_end)
-
 def object_end(message):
+    cursor = conn.cursor()
     cursor.execute("SELECT UserName FROM User WHERE UserID = %i" % (int(message.chat.id)))
-    UserName_2 = cursor.fetchall()
+    UseName_2 = cursor.fetchall()
     cursor.execute("SELECT Rights FROM User WHERE UserID = %i" % (int(message.chat.id)))
     UserID_1 = cursor.fetchall()
-    cursor.execute("UPDATE Table_2 UserName=%r, Rights=%r, DateTime=%r, Action2=%r ,Message=' ' WHERE UserID=%s AND Message='Last'" %
-                   (str(UserName_2), str(UserID_1), time.asctime(),message.text, str(message.chat.id)))
+    cursor.execute("UPDATE Table_2 SET UserName=%r, Rights=%r, DateTime=%r, Action2=%r ,Message=' ' WHERE UserID=%s AND Message='Last'" %
+                   (str(UseName_2), str(UserID_1), time.asctime(), message.text, str(message.chat.id)))
     conn.commit()
+    cursor.close()
     bot.send_message(message.chat.id, "Я запомню это")
+
+def object_obj(message):
+    msg = bot.send_message(message.chat.id, "Что вы там делаете?")
+    bot.register_next_step_handler(msg, object_end)
+    cursor.execute("UPDATE Table_2 SET PlaceProject = %r WHERE UserID=%s AND Message='Last'" %
+                   (str(message.text), str(message.chat.id)))
+    conn.commit()
+
+def object_obj_2(message):
+    msg = bot.send_message(message.chat.id, "Что вы там делаете?")
+    bot.register_next_step_handler(msg, object_end)
+    cursor.execute("INSERT INTO UserButtion VALUES(%s,'O',%r)" % (str(message.chat.id), str(message.text)))
+    cursor.execute("UPDATE Table_2 SET PlaceProject = %r WHERE UserID=%s AND Message='Last'" %
+                   (message.text, str(message.chat.id)))
+    conn.commit()
+
 
 
 
@@ -190,7 +181,7 @@ def mess(message):
 
 @bot.message_handler(regexp="Я занимаюсь чем-то новым")
 def new(message):
-    msg = bot.send_message(message.chat.id, "Напишите название проекта. Помните вы не можете иметь более 3-х проектов. Если вы хотите удалить проект напишите 'Я хочу удалить проект'")
+    msg = bot.send_message(message.chat.id, "Напишите название проекта. Если вы хотите удалить проект напишите 'Я хочу удалить проект'")
     bot.register_next_step_handler(msg, project_pro)
 
 @bot.message_handler(regexp="Я все еще работаю над одним из старых проектов")
@@ -222,6 +213,7 @@ def project_pro(message, e="0", f="0", g="0"):
     bot.register_next_step_handler(msg, project)
 
 def project(message):
+    cursor = conn.cursor()
     cursor.execute("SELECT UserName FROM User WHERE UserID = %i" % (int(message.chat.id)))
     UserName_2 = cursor.fetchall()
     cursor.execute("SELECT Rights FROM User WHERE UserID = %i" % (int(message.chat.id)))
@@ -230,6 +222,7 @@ def project(message):
         "UPDATE Table_2 UserName=%r, Rights=%r, DateTime=%r, Action2=%r ,Message=' ' WHERE UserID=%s AND Message='Last'" %
         (str(UserName_2), str(UserID_1), time.asctime(), message.text, str(message.chat.id)))
     conn.commit()
+    cursor.close()
     bot.send_message(message.chat.id, "Я запомню это")
 
 
@@ -237,12 +230,15 @@ def project(message):
 # Реакция на "В дороге"
 @bot.message_handler(regexp="Я в дороге")
 def road_mess(message):
+    cursor = conn.cursor()
     msg = bot.send_message(message.chat.id, "Куда вы едете?")
     cursor.execute("INSERT INTO Table_2(UserID,Message) VALUES(%s,'Last')" % (str(message.chat.id)))
     conn.commit()
+    cursor.close()
     bot.register_next_step_handler(msg, road_why)
 
 def road(message):
+    cursor = conn.cursor()
     cursor.execute("SELECT UserName FROM User WHERE UserID = %i" % (int(message.chat.id)))
     UserName_2 = cursor.fetchall()
     cursor.execute("SELECT Rights FROM User WHERE UserID = %i" % (int(message.chat.id)))
@@ -251,11 +247,14 @@ def road(message):
     cursor.execute("UPDATE Table_2 SET UserName=%r, Rights=%r, DateTime=%r, Action='Я в Дороге', Action2='В дороге', ForRoad=%r, Message='Not Last' WHERE UserID=%s AND Message='Last'" %
                     (str(UserName_2), str(UserID_1), time.asctime(), message.text, str(message.chat.id)))
     conn.commit()
+    cursor.close()
 
 def road_why(message):
+    cursor = conn.cursor()
     msg = bot.send_message(message.chat.id, "Зачем?")
     cursor.execute("UPDATE Table_2 SET PlaceProject=%r WHERE UserID=%s AND Message='Last'" % (message.text, str(message.chat.id)))
     conn.commit()
+    cursor.close()
     bot.register_next_step_handler(msg, road)
 
 
@@ -263,18 +262,22 @@ def road_why(message):
 # Реакция на "Другое"
 @bot.message_handler(regexp="Другое")
 def other(message):
+    cursor = conn.cursor()
     cursor.execute("SELECT UserName FROM User WHERE UserID = %i" % (int(message.chat.id)))
     UserName_2 = cursor.fetchall()
     cursor.execute("SELECT Rights FROM User WHERE UserID = %i" % (int(message.chat.id)))
     UserID_1 = cursor.fetchall()
     cursor.execute("INSERT INTO Table_2(UserName,UserID, Rights, DateTime,Action,Message) VALUES(%r,%s,%r,%r,%r,'Last')" % (
     str(UserName_2), message.chat.id, str(UserID_1), time.asctime(), message.text))
+    cursor.close()
     msg = bot.send_message(message.chat.id, "Напишите.")
     bot.register_next_step_handler(msg, other_o)
 
 def other_o(message):
+    cursor = conn.cursor()
     cursor.execute("UPDATE Table_2 SET Action2=%s ,Message=' ' WHERE UserID=%s AND Message='Last'" % (message.text, message.chat.id))
     conn.commit()
+    cursor.close()
     bot.send_message(message.chat.id,"Я запомню это")
 
 
@@ -282,15 +285,17 @@ def other_o(message):
 # Реакция на "Дома"
 @bot.message_handler(regexp="Я дома")
 def other(message):
+    cursor = conn.cursor()
     cursor.execute("SELECT UserName FROM User WHERE UserID = %i" % (int(message.chat.id)))
     UserName_2 = cursor.fetchall()
     cursor.execute("SELECT Rights FROM User WHERE UserID = %i" % (int(message.chat.id)))
     UserID_1 = cursor.fetchall()
     action = message.text
     place = "0"
-    cursor.execute("INSERT INTO Table_2 VALUES(%r,%i,%r,%r,%r,%r,%r,%r)" %
-                   (str(UserName_2), message.chat.id, str(UserID_1), time.asctime(), action, place, "Я дома", "0"))
+    cursor.execute("INSERT INTO Table_2 VALUES(%r,%i,%r,%r,%r,%r,%r,%r,%r)" %
+                   (str(UserName_2), message.chat.id, str(UserID_1), time.asctime(), action, place, "Я дома", "",""))
     conn.commit()
+    cursor.close()
     bot.send_message(message.chat.id, "Ок")
 
 
@@ -298,8 +303,6 @@ def other(message):
 # Удаление проектов
 @bot.message_handler(regexp="Я хочу удалить проект")
 def delete(message):
-    global jo
-    jo = 1
     maxup = types.ReplyKeyboardMarkup(row_width=1)
     if e != "0":
         buttion_one = types.KeyboardButton(e)
@@ -332,8 +335,6 @@ def delete_project(message):
 # Удаление объектов
 @bot.message_handler(regexp="Я хочу удалить объект")
 def delete(message):
-    global jo
-    jo = 1
     maxup = types.ReplyKeyboardMarkup(row_width=1)
     if a != "0":
         buttion_one = types.KeyboardButton(b)
@@ -348,9 +349,6 @@ def delete(message):
     bot.register_next_step_handler(msg, delete_object)
 
 def delete_object(message):
-    global d
-    global b
-    global c
     if message.text == b:
         b = c
         c = d

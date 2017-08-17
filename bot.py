@@ -15,8 +15,8 @@ cursor = conn.cursor()
 
 user = [372111586, 27390261]
 admins = [372111586, 27390261]
-but=[]
-but_p=[]
+but=[372111586]
+but_p=[372111586]
 
 bot = telebot.TeleBot(config.token)
 def function(uid):
@@ -116,9 +116,7 @@ def new_user_add(message):
 @bot.message_handler(regexp="Я на объекте")
 def handle_message(message):
     workup = types.ReplyKeyboardMarkup()
-    button_New = types.KeyboardButton(text="Объект новый")
-    buttion_old = types.KeyboardButton(text="Объект старый")
-    workup.add(button_New, buttion_old)
+    workup.add('Объект новый', 'Объект старый')
     bot.send_message(message.chat.id, "На каком объекте?", reply_markup=workup)
     cursor.execute("INSERT INTO Table_2(UserID,Action,Message) VALUES(%s,'Я на объекте','Last')" % (str(message.chat.id)))
     conn.commit()
@@ -129,14 +127,15 @@ def handle_message_id(message):
     bot.register_next_step_handler(msg, object_obj_2)
 
 @bot.message_handler(regexp="Объект старый")
-def handle_message_id_2(message):
-    cursor=conn.cursor()
-    cursor.execute("SELECT Buttion FROM UserButtion WHERE UserID=%i AND OP='O'" % (int(message.chat.id)))
-    maxup = types.ReplyKeyboardMarkup(row_width=1)
-    for message.chat.id in but:
-        maxup.add(cursor.fetchone())
-    msg = bot.send_message(message.chat.id, "Напишите название объекта на котором вы сейчас", reply_markup=maxup)
+def answer_text(message):
+    cursor = conn.cursor()
+    cursor.execute("SELECT Buttion FROM UserButtion WHERE UserID=%i AND OP='O'" % (message.chat.id))
+    [results] = cursor.fetchone()
     cursor.close()
+    user_markup = types.ReplyKeyboardMarkup()
+    for beta in but:
+        user_markup.row(str(results))
+    msg = bot.send_message(message.from_user.id, answer, reply_markup=user_markup)
     bot.register_next_step_handler(msg, object_obj)
 
 def object_end(message):
@@ -152,6 +151,7 @@ def object_end(message):
     bot.send_message(message.chat.id, "Я запомню это")
 
 def object_obj(message):
+    cursor = conn.cursor()
     msg = bot.send_message(message.chat.id, "Что вы там делаете?")
     bot.register_next_step_handler(msg, object_end)
     cursor.execute("UPDATE Table_2 SET PlaceProject = %r WHERE UserID=%s AND Message='Last'" %
@@ -162,7 +162,7 @@ def object_obj_2(message):
     msg = bot.send_message(message.chat.id, "Что вы там делаете?")
     bot.register_next_step_handler(msg, object_end)
     but.append(message.chat.id)
-    cursor.execute("INSERT INTO UserButtion VALUES(%s,'O',%r,%i)" % (str(message.chat.id), str(message.text),1))
+    cursor.execute("INSERT INTO UserButtion VALUES(%s,'O',%r)" % (str(message.chat.id), message.text))
     cursor.execute("UPDATE Table_2 SET PlaceProject = %r WHERE UserID=%s AND Message='Last'" %
                    (message.text, str(message.chat.id)))
     conn.commit()
@@ -188,11 +188,13 @@ def new(message):
 
 @bot.message_handler(regexp="Я все еще работаю над одним из старых проектов")
 def handle_message_id(message):
-    cursor=conn.cursor()
-    cursor.execute("SELECT Buttion FROM UserButtion WHERE UserID=%i AND OP='P'" % (int(message.chat.id)))
-    maxup = types.ReplyKeyboardMarkup(row_width=1)
-    for message.chat.id in but_p:
-        maxup.add(cursor.fetchone())
+    cursor = conn.cursor()
+    cursor.execute("SELECT Buttion FROM UserButtion WHERE UserID=%i AND OP='P'" % (message.chat.id))
+    [results] = cursor.fetchone()
+    cursor.close()
+    maxup = types.ReplyKeyboardMarkup()
+    for beta in but:
+        maxup.row(str(results))
     msg = bot.send_message(message.chat.id, "Напишите, чем именно вы сейчас заняты", reply_markup=maxup)
     cursor.close()
     bot.register_next_step_handler(msg, project_pro)

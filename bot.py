@@ -33,11 +33,12 @@ def function_1(userid):
     else:
         return False
 
-def message_send(u):
+def message_send():
     statTime = time.strftime("%H:%M")
     dateTime = time.strftime("%A")
+    u="0"
     while True:
-        if statTime == "9:00" or statTime == "13:00" or statTime == "18:00":
+        if statTime == "9:00" or statTime == "13:05" or statTime == "18:00":
             for beta in user:
                 if u == "0":
                     make = types.ReplyKeyboardMarkup()
@@ -56,7 +57,6 @@ def message_send(u):
                     bot.send_message(beta, result)
         if statTime == "9:01" or statTime == "13:01" or statTime == "18:01":
             u = "0"
-
 
 
 # Реакция на комманду /start

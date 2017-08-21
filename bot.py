@@ -1,11 +1,12 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
+from time_thread import *
 import config
 from config import *
 import telebot
 from telebot import types
 import sqlite3
-import time
+import datetime
 import threading
 
 
@@ -13,7 +14,7 @@ conn = sqlite3.connect('DB FOR BOT.db', check_same_thread=False)
 cursor = conn.cursor()
 
 
-user = [372111586, 27390261]
+user = [372111586]
 admins = [372111586, 27390261]
 but=[372111586]
 but_p=[372111586]
@@ -21,94 +22,54 @@ but_p=[372111586]
 bot = telebot.TeleBot(config.token)
 def function(uid):
     for beta in admins:
-        if uid==beta:
+        if uid == beta:
             return True
     else:
         return False
 
 def function_1(userid):
     for beta in user:
-        if userid==beta:
+        if userid == beta:
             return True
     else:
         return False
 
-def message_send():
-    statTime = time.strftime("%H:%M")
-    dateTime = time.strftime("%A")
-    u="0"
-    while True:
-        if statTime == "9:00" or statTime == "13:05" or statTime == "18:00":
-            for beta in user:
-                if u == "0":
-                    make = types.ReplyKeyboardMarkup()
-                    buttion_1 = types.KeyboardButton(text="Я на объекте")
-                    buttion_2 = types.KeyboardButton(text="Я на работе")
-                    buttion_3 = types.KeyboardButton(text="Я дома")
-                    buttion_4 = types.KeyboardButton(text="Я в лаборотории")
-                    buttion_5 = types.KeyboardButton(text="Другое")
-                    make.add(buttion_1, buttion_2, buttion_3, buttion_4, buttion_5)
-                    bot.send_message(beta, "Где вы или чем заняты?", reply_markup=make)
-                    u = "1"
-                if dateTime == "Monday":
-                    cursor.execute("SELECT DateTime, Action, PlaceProject, Action2, Road"
-                                   " FROM Table_2 ORDER BY ID LIMIT ?", (str(beta)))
-                    result = cursor.fetchall()
-                    bot.send_message(beta, result)
-        if statTime == "9:01" or statTime == "13:01" or statTime == "18:01":
-            u = "0"
+def buttions(beta):
+    make = types.ReplyKeyboardMarkup()
+    buttion_1 = types.KeyboardButton(text="Я на объекте")
+    buttion_2 = types.KeyboardButton(text="Я на работе")
+    buttion_3 = types.KeyboardButton(text="Я дома")
+    buttion_4 = types.KeyboardButton(text="Я в лаборотории")
+    buttion_5 = types.KeyboardButton(text="Другое")
+    make.add(buttion_1, buttion_2, buttion_3, buttion_4, buttion_5)
+    bot.send_message(beta, "Где вы или чем заняты?", reply_markup=make)
+
 
 
 # Реакция на комманду /start
 @bot.message_handler(commands=["start"])
 def welcome_message(message):
+    user.append(message.chat.id)
     bot.send_message(message.chat.id,
                      "Здравствуйте! Я бот для отчетов, каждый день нещадно с 9 утра спамить вас запросами "
                      "об отчетах покуда вы не ответите. Вы сами на это подписались! "
                      "Надеюсь наша работа с вами будет успешной.")
     if function(message.from_user.id):
         bot.send_message(message.chat.id,
-                         "Вы являетесь админом и можете заносить новых пользователей с помощью команды /newperson.")
+                         "Вы являетесь админом и можете давать пользователям права админов с помощью комманды /newadmin.")
 
 
 
 # Добавление пользователей
-@bot.message_handler(commands=["newperson"])
+@bot.message_handler(commands=["newadmin"])
 def new(message):
     if function(message.from_user.id):
-        msg = bot.send_message(message.chat.id, "New user name:")
+        msg = bot.send_message(message.chat.id, "ID:")
         bot.register_next_step_handler(msg, new_user_name)
 
-@bot.message_handler(regexp="1")
-def right_1(message):
-    if function(message.from_user.id):
-        config.Rights = "1"
-        msg = bot.send_message(message.chat.id, "ID:")
-        cursor.execute("UPDATE Table_2 SET Rights='1' WHERE LastMessage='NEW'")
-        conn.commit()
-        bot.register_next_step_handler(msg, new_user_add)
-
-@bot.message_handler(regexp="2")
-def right_2(message):
-    if function(message.from_user.id):
-        config.Rights = "2"
-        msg = bot.send_message(message.chat.id, "ID:")
-        cursor.execute("UPDATE Table_2 SET Rights='2' WHERE LastMessage='NEW'")
-        conn.commit()
-        bot.register_next_step_handler(msg, new_user_add)
-
 def new_user_name(message):
-    bot.send_message(message.chat.id, "Rights(Админ-1, Обычный пользователь-2):")
-    cursor.execute("INSERT INTO User(UserName,LastMessage) VALUES(%r,'NEW')" % (message.text))
-    conn.commit()
-
-def new_user_add(message):
-    user.append(message.text)
-    cursor.execute("UPDATE Table_2 SET UserID=%r, LastMessage=' ' WHERE LastMessage='NEW'" % (message.text))
-    conn.commit()
-    if config.Rights == "1":
-        admins.append(message.text)
-        config.Rights = "0"
+    bot.send_message(message.chat.id, "Пользователь отныне администратор")
+    admins.append(message.chat.id)
 
 
 
@@ -211,7 +172,7 @@ def project_pro_2(message):
     msg = bot.send_message(message.chat.id, "Что вы там делаете?")
     bot.register_next_step_handler(msg, object_end)
     but_p.append(message.chat.id)
-    cursor.execute("INSERT INTO UserButtion VALUES(%s,'P',%r,%i)" % (str(message.chat.id), str(message.text),1))
+    cursor.execute("INSERT INTO UserButtion VALUES(%s,'P',%r)" % (str(message.chat.id), str(message.text)))
     cursor.execute("UPDATE Table_2 SET PlaceProject = %r WHERE UserID=%s AND Message='Last'" %
                    (message.text, str(message.chat.id)))
     conn.commit()
@@ -272,8 +233,7 @@ def other(message):
     UserName_2 = cursor.fetchall()
     cursor.execute("SELECT Rights FROM User WHERE UserID = %i" % (int(message.chat.id)))
     UserID_1 = cursor.fetchall()
-    cursor.execute("INSERT INTO Table_2(UserName,UserID, Rights, DateTime,Action,Message) VALUES(%r,%s,%r,%r,%r,'Last')" % (
-    str(UserName_2), message.chat.id, str(UserID_1), time.asctime(), message.text))
+    cursor.execute("INSERT INTO Table_2(UserName,UserID, Rights, DateTime,Action,Message) VALUES(%r,%s,%r,%r,%r,'Last')" % (str(UserName_2), message.chat.id, str(UserID_1), time.asctime(), message.text))
     cursor.close()
     msg = bot.send_message(message.chat.id, "Напишите.")
     bot.register_next_step_handler(msg, other_o)
@@ -318,7 +278,8 @@ def delete(message):
     bot.register_next_step_handler(msg, delete_project)
 
 def delete_project(message):
-   cursor.execute("DELETE FROM UserButtion WHERE UserID=%i AND Buttion=%s" % (int(message.chat.id), message.text))
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM UserButtion WHERE UserID=%i AND Buttion=%s" % (int(message.chat.id), message.text))
 
 
 
@@ -334,9 +295,9 @@ def delete(message):
     msg = bot.send_message(message.chat.id, "Выберите объект на удаление", reply_markup=maxup)
     bot.register_next_step_handler(msg, delete_object)
 
+
 def delete_object(message):
     cursor.execute("DELETE FROM UserButtion WHERE UserID=%i AND Buttion=%s" % (int(message.chat.id), message.text))
-
 
 
 if __name__ == '__main__':

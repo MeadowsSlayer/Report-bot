@@ -2,8 +2,8 @@ from ff import *
 
 
 def message_send():
-    now_time = datetime.datetime.now()
     while True:
+        now_time = datetime.datetime.now()
         if now_time.hour == 19 and now_time.minute == 9:
             for beta in user:
                 buttions(beta)

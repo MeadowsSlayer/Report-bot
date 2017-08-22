@@ -53,12 +53,11 @@ def add_user(message):
     cursor = conn.cursor()
     cursor.execute("SELECT UserID FROM User WHERE UserID=%s" % (int(message.chat.id)))
     result = cursor.fetchone()
-    results = cursor.fetchall()
     cursor.close()
-    print(results)
+    print(result)
     if result is None:
         cursor = conn.cursor()
-        cursor.execute("INSERT INTO User (UserName,UserID) VALUES(%r,%r)" % (str(message.chat.first_name),str(message.chat.id)))
+        cursor.execute("INSERT INTO User (UserName,UserID,LastMessage) VALUES(%r,%r,%i)" % (str(message.chat.first_name),str(message.chat.id)),1)
         conn.commit()
         cursor.close()
         user.append(message.chat.id)
@@ -149,7 +148,7 @@ def object_obj_2(message):
 
 
 # Развитие событий "В лаборотории"
-@bot.message_handler(regexp="Я в лабаротории")
+@bot.message_handler(regexp="Я в лаборатории")
 def mess(message):
     work = types.ReplyKeyboardMarkup(row_width=1)
     buttion_new = types.KeyboardButton(text="Я занимаюсь чем-то новым")
@@ -257,7 +256,7 @@ def other(message):
 
 def other_o(message):
     cursor = conn.cursor()
-    cursor.execute("UPDATE Table_2 SET Action2=%s ,Message=' ' WHERE UserID=%s AND Message='Last'" % (message.text, message.chat.id))
+    cursor.execute("UPDATE Table_2 SET Action2=%r, Message=' ' WHERE UserID=%s AND Message='Last'" % (message.text, message.chat.id))
     conn.commit()
     cursor.close()
     bot.send_message(message.chat.id,"Я запомню это")

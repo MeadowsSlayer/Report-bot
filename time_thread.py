@@ -12,8 +12,6 @@ def message_send():
 			if a==0:
 				for beta in result:
 					buttion(beta)
-					print(cursor.fetchone())
-					print(cursor.fetchone())
 					cursor.close()
 					a=1
 		if (now_time.hour == 10) or (now_time.hour == 14) or (now_time.hour == 19):

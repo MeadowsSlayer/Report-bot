@@ -7,14 +7,13 @@ from config import *
 import telebot
 from telebot import types
 import sqlite3
-import datetime
 import threading
-
+import datetime
 
 conn = sqlite3.connect('DB FOR BOT.db', check_same_thread=False)
 cursor = conn.cursor()
 
-user = [372111586]
+user = []
 admins = [372111586, 27390261]
 but=[372111586]
 but_p=[372111586]
@@ -54,17 +53,18 @@ def add_user(message):
     cursor = conn.cursor()
     cursor.execute("SELECT UserID FROM User WHERE UserID=%s" % (int(message.chat.id)))
     result = cursor.fetchone()
+    results = cursor.fetchall()
     cursor.close()
-    print(result)
+    print(results)
     if result is None:
         cursor = conn.cursor()
-        cursor.execute("INSERT INTO User (UserName,UserID) VALUES(%r,%i)" % (str(message.chat.first_name),str(message.chat.id)))
+        cursor.execute("INSERT INTO User (UserName,UserID) VALUES(%r,%r)" % (str(message.chat.first_name),str(message.chat.id)))
         conn.commit()
         cursor.close()
         user.append(message.chat.id)
 
 
-def buttion():
+def buttion(beta):
     make = types.ReplyKeyboardMarkup()
     buttion_1 = types.KeyboardButton(text="Я на объекте")
     buttion_2 = types.KeyboardButton(text="Я в дороге")
@@ -316,6 +316,10 @@ def delete(message):
 def delete_object(message):
     cursor.execute("DELETE FROM UserButtion WHERE UserID=%i AND Buttion=%s" % (int(message.chat.id), message.text))
 
+e1 = threading.Event()
 
 if __name__ == '__main__':
+    t = threading.Thread(target=message_send)
+    t.start()
+    e1.set()
     bot.polling(none_stop=True)

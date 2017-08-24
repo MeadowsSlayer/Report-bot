@@ -42,7 +42,6 @@ def welcome_message(message):
                      "Здравствуйте! Я бот для отчетов, каждый день нещадно с 9 утра спамить вас запросами "
                      "об отчетах покуда вы не ответите. Вы сами на это подписались! "
                      "Надеюсь наша работа с вами будет успешной.")
-    
     if function(message.chat.id):
         bot.send_message(message.chat.id,
                          "Вы являетесь админом и можете давать пользователям права админов с помощью комманды /newadmin.")
@@ -54,13 +53,13 @@ def add_user(message):
     cursor.execute("SELECT UserID FROM User WHERE UserID=%s" % (int(message.chat.id)))
     result = cursor.fetchone()
     cursor.close()
-    print(result)
+    print(message)
     if result is None:
         cursor = conn.cursor()
         cursor.execute("INSERT INTO User (UserName,UserID,LastMessage) VALUES(%r,%r,%i)" % (str(message.chat.first_name),str(message.chat.id)),1)
         conn.commit()
         cursor.close()
-        user.append(message.chat.id)
+        
 
 
 def buttion(beta):

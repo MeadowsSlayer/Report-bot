@@ -23,7 +23,8 @@ def message_send():
 		if (now_time.hour == 9) or (now_time.hour == 12) or (now_time.hour == 18):
 			for row in result:
 				if str(b) in str(count):
-					time.sleep(3600) 
+					time.sleep(3600)
+					b=0
 				print(row)
 				make = types.ReplyKeyboardMarkup()
 				buttion_1 = types.KeyboardButton(text="Я на объекте")

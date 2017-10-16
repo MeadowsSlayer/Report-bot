@@ -20,7 +20,7 @@ def message_send():
 		cursor.close()
 		connects.close()
 		now_time = datetime.datetime.now()
-		if (now_time.hour == 9) or (now_time.hour == 12) or (now_time.hour == 18):
+		if (now_time.hour == 11) or (now_time.hour == 12) or (now_time.hour == 18):
 			for row in result:
 				if str(b) in str(count):
 					time.sleep(3600)
@@ -33,6 +33,14 @@ def message_send():
 				buttion_4 = types.KeyboardButton(text="Я в лаборатории")
 				buttion_5 = types.KeyboardButton(text="Другое")
 				make.add(buttion_1, buttion_2, buttion_3, buttion_4, buttion_5)
-				bot.send_message(row[i], "Где вы или чем заняты?", reply_markup=make)
+				bot.send_message(372111586, "Где вы или чем заняты?", reply_markup=make)
 				++i
 				b+=1
+				if "Mon" in time.ctime() and now_time.hour == 11:
+					connects=connect()
+					cursor=connects.cursor()
+					for bet in cursor.execute("SELECT * FROM Table_2 WHERE UserID=%i"% (row)):
+						print(bet)
+						bot.send_message(admins[i], cursor.fetchone())
+					cursor.close()
+					connects.close()
